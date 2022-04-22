@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="PublishedDateStyle" parent="Widget.AppCompat.TextView">
+        <item name="android:textSize">@dimen/published_date_font_size</item>
+        <item name="android:textColor">?android:colorPrimary</item>
+    </style>
+</resources>
