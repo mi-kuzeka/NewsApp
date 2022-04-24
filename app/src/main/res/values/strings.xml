@@ -1,6 +1,10 @@
 <resources>
     <string name="app_name">News App</string>
+    <!--    Temp data for news item-->
+    <string name="temp_section_name">US news</string>
     <string name="temp_web_title">Biden to detail new military aid plan for Ukraine – US politics live</string>
     <string name="temp_publication_date">2022–04–21</string>
     <string name="temp_publication_time">13:48</string>
+    <!--    Hint for search-->
+    <string name="search_hint">Search…</string>
 </resources>

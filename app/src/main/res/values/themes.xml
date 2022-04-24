@@ -35,4 +35,8 @@
         <item name="android:maxLines">@integer/item_max_lines</item>
         <item name="android:ellipsize">end</item>
     </style>
+
+    <style name="MainLayoutStyle">
+        <item name="android:background">@color/md_theme_light_surfaceVariant</item>
+    </style>
 </resources>
