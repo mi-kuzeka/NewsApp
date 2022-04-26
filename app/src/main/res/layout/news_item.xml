@@ -22,7 +22,7 @@
 
         <TextView
             android:id="@+id/section_name"
-            style="@style/PublicationDateStyle"
+            style="@style/SectionNameStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"

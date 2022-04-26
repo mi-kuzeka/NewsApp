@@ -42,19 +42,16 @@ public class QueryUtils {
     public static List<News> fetchNewsData(String requestUrl) {
         Log.v(LOG_TAG, "TEST: fetchNewsData");
 
-//        // Create URL object
-//        URL url = createUrl(requestUrl);
-//
-//        // Perform HTTP request to the URL and receive a JSON response back
-//        String jsonResponse = null;
-//        try {
-//            jsonResponse = makeHttpRequest(url);
-//        } catch (IOException e) {
-//            Log.e(LOG_TAG, "Problem making the HTTP request.", e);
-//        }
+        // Create URL object
+        URL url = createUrl(requestUrl);
 
-        // TODO: remove temp data
-        String jsonResponse = "{\"response\":{\"status\":\"ok\",\"userTier\":\"developer\",\"total\":2341415,\"startIndex\":11,\"pageSize\":10,\"currentPage\":2,\"pages\":234142,\"orderBy\":\"newest\",\"results\":[{\"id\":\"sport/2022/apr/23/mclaren-are-well-off-the-f1-pace-but-must-focus-on-the-future-to-find-a-fix\",\"type\":\"article\",\"sectionId\":\"sport\",\"sectionName\":\"Sport\",\"webPublicationDate\":\"2022-04-23T11:13:26Z\",\"webTitle\":\"McLaren are off the F1 pace – can their plan deliver the speed they need? | Giles Richards\",\"webUrl\":\"https://www.theguardian.com/sport/2022/apr/23/mclaren-are-well-off-the-f1-pace-but-must-focus-on-the-future-to-find-a-fix\",\"apiUrl\":\"https://content.guardianapis.com/sport/2022/apr/23/mclaren-are-well-off-the-f1-pace-but-must-focus-on-the-future-to-find-a-fix\",\"isHosted\":false,\"pillarId\":\"pillar/sport\",\"pillarName\":\"Sport\"},{\"id\":\"sport/2022/apr/23/former-india-head-coach-gary-kirsten-keen-on-england-cricket-test-job\",\"type\":\"article\",\"sectionId\":\"sport\",\"sectionName\":\"Sport\",\"webPublicationDate\":\"2022-04-23T11:08:46Z\",\"webTitle\":\"Former India head coach Gary Kirsten keen on England Test job\",\"webUrl\":\"https://www.theguardian.com/sport/2022/apr/23/former-india-head-coach-gary-kirsten-keen-on-england-cricket-test-job\",\"apiUrl\":\"https://content.guardianapis.com/sport/2022/apr/23/former-india-head-coach-gary-kirsten-keen-on-england-cricket-test-job\",\"isHosted\":false,\"pillarId\":\"pillar/sport\",\"pillarName\":\"Sport\"},{\"id\":\"lifeandstyle/2022/apr/23/shobna-gulati-son-akshay-look-back\",\"type\":\"article\",\"sectionId\":\"lifeandstyle\",\"sectionName\":\"Life and style\",\"webPublicationDate\":\"2022-04-23T11:00:52Z\",\"webTitle\":\"‘I was shamed for having my son but I stood up for my choices’: Shobna Gulati and her son Akshay look back\",\"webUrl\":\"https://www.theguardian.com/lifeandstyle/2022/apr/23/shobna-gulati-son-akshay-look-back\",\"apiUrl\":\"https://content.guardianapis.com/lifeandstyle/2022/apr/23/shobna-gulati-son-akshay-look-back\",\"isHosted\":false,\"pillarId\":\"pillar/lifestyle\",\"pillarName\":\"Lifestyle\"},{\"id\":\"football/blog/2022/apr/23/arsenal-or-chelsea-where-will-the-wsl-trophy-end-up\",\"type\":\"article\",\"sectionId\":\"football\",\"sectionName\":\"Football\",\"webPublicationDate\":\"2022-04-23T11:00:52Z\",\"webTitle\":\"Arsenal or Chelsea? Where will the WSL trophy end up? | Louise Taylor\",\"webUrl\":\"https://www.theguardian.com/football/blog/2022/apr/23/arsenal-or-chelsea-where-will-the-wsl-trophy-end-up\",\"apiUrl\":\"https://content.guardianapis.com/football/blog/2022/apr/23/arsenal-or-chelsea-where-will-the-wsl-trophy-end-up\",\"isHosted\":false,\"pillarId\":\"pillar/sport\",\"pillarName\":\"Sport\"},{\"id\":\"sport/2022/apr/23/friendly-battle-for-the-no-10-shirt-has-englands-women-flying\",\"type\":\"article\",\"sectionId\":\"sport\",\"sectionName\":\"Sport\",\"webPublicationDate\":\"2022-04-23T11:00:51Z\",\"webTitle\":\"Friendly battle for the No 10 shirt has England’s women flying\",\"webUrl\":\"https://www.theguardian.com/sport/2022/apr/23/friendly-battle-for-the-no-10-shirt-has-englands-women-flying\",\"apiUrl\":\"https://content.guardianapis.com/sport/2022/apr/23/friendly-battle-for-the-no-10-shirt-has-englands-women-flying\",\"isHosted\":false,\"pillarId\":\"pillar/sport\",\"pillarName\":\"Sport\"},{\"id\":\"lifeandstyle/2022/apr/23/my-mother-was-a-ruthless-ditcher-of-friends-should-i-dump-my-most-annoying-mates\",\"type\":\"article\",\"sectionId\":\"lifeandstyle\",\"sectionName\":\"Life and style\",\"webPublicationDate\":\"2022-04-23T11:00:51Z\",\"webTitle\":\"My mother was a ruthless ditcher of friends – should I dump my most annoying mates?\",\"webUrl\":\"https://www.theguardian.com/lifeandstyle/2022/apr/23/my-mother-was-a-ruthless-ditcher-of-friends-should-i-dump-my-most-annoying-mates\",\"apiUrl\":\"https://content.guardianapis.com/lifeandstyle/2022/apr/23/my-mother-was-a-ruthless-ditcher-of-friends-should-i-dump-my-most-annoying-mates\",\"isHosted\":false,\"pillarId\":\"pillar/lifestyle\",\"pillarName\":\"Lifestyle\"},{\"id\":\"football/2022/apr/23/chelsea-west-ham-match-preview-premier-league\",\"type\":\"article\",\"sectionId\":\"football\",\"sectionName\":\"Football\",\"webPublicationDate\":\"2022-04-23T10:39:42Z\",\"webTitle\":\"Chelsea v West Ham: match preview\",\"webUrl\":\"https://www.theguardian.com/football/2022/apr/23/chelsea-west-ham-match-preview-premier-league\",\"apiUrl\":\"https://content.guardianapis.com/football/2022/apr/23/chelsea-west-ham-match-preview-premier-league\",\"isHosted\":false,\"pillarId\":\"pillar/sport\",\"pillarName\":\"Sport\"},{\"id\":\"us-news/2022/apr/23/texas-butterfly-center-targeted-by-far-right-conspiracy-theorists-to-reopen\",\"type\":\"article\",\"sectionId\":\"us-news\",\"sectionName\":\"US news\",\"webPublicationDate\":\"2022-04-23T10:00:51Z\",\"webTitle\":\"Texas butterfly center targeted by far-right conspiracy theorists to reopen\",\"webUrl\":\"https://www.theguardian.com/us-news/2022/apr/23/texas-butterfly-center-targeted-by-far-right-conspiracy-theorists-to-reopen\",\"apiUrl\":\"https://content.guardianapis.com/us-news/2022/apr/23/texas-butterfly-center-targeted-by-far-right-conspiracy-theorists-to-reopen\",\"isHosted\":false,\"pillarId\":\"pillar/news\",\"pillarName\":\"News\"},{\"id\":\"money/2022/apr/23/uk-train-tickets-the-great-rail-sale-is-on-but-is-there-a-catch\",\"type\":\"article\",\"sectionId\":\"money\",\"sectionName\":\"Money\",\"webPublicationDate\":\"2022-04-23T10:00:51Z\",\"webTitle\":\"UK train tickets: the great rail sale is on – but is there a catch?\",\"webUrl\":\"https://www.theguardian.com/money/2022/apr/23/uk-train-tickets-the-great-rail-sale-is-on-but-is-there-a-catch\",\"apiUrl\":\"https://content.guardianapis.com/money/2022/apr/23/uk-train-tickets-the-great-rail-sale-is-on-but-is-there-a-catch\",\"isHosted\":false,\"pillarId\":\"pillar/lifestyle\",\"pillarName\":\"Lifestyle\"},{\"id\":\"us-news/2022/apr/23/san-francisco-homelessness-street-team-fentanyl\",\"type\":\"article\",\"sectionId\":\"us-news\",\"sectionName\":\"US news\",\"webPublicationDate\":\"2022-04-23T10:00:50Z\",\"webTitle\":\"The daily battle to keep people alive as fentanyl ravages San Francisco’s Tenderloin\",\"webUrl\":\"https://www.theguardian.com/us-news/2022/apr/23/san-francisco-homelessness-street-team-fentanyl\",\"apiUrl\":\"https://content.guardianapis.com/us-news/2022/apr/23/san-francisco-homelessness-street-team-fentanyl\",\"isHosted\":false,\"pillarId\":\"pillar/news\",\"pillarName\":\"News\"}]}}";
+        // Perform HTTP request to the URL and receive a JSON response back
+        String jsonResponse = null;
+        try {
+            jsonResponse = makeHttpRequest(url);
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Problem making the HTTP request.", e);
+        }
 
         // Extract relevant fields from the JSON response and create a list of {@link News}
         // Return list of {@link News}
@@ -92,7 +89,11 @@ public class QueryUtils {
             urlConnection.setReadTimeout(10000 /* milliseconds */);
             urlConnection.setConnectTimeout(15000 /* milliseconds */);
             urlConnection.setRequestMethod("GET");
-            urlConnection.connect();
+            try {
+                urlConnection.connect();
+            } catch (Exception exception) {
+                Log.e(LOG_TAG, "Error with connection to URL");
+            }
 
             // If the request was successful (response code 200),
             // then read the input stream and parse the response.

@@ -1,12 +1,14 @@
 package ru.startandroid.newsapp;
 
+import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.text.ParseException;
@@ -15,19 +17,61 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.ViewHolder> {
-    private List<News> localNewsList;
+public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    private final int VIEW_TYPE_ITEM = 0;
+    private final int VIEW_TYPE_LOADING = 1;
+    private OnLoadMoreListener onLoadMoreListener;
+    private boolean isLoading;
+    private Activity activity;
+    private List<News> newsList;
+    private final int visibleThreshold = 5;
+    private int lastVisibleItem, totalItemCount;
+
+    /**
+     * Initialize the dataset of the Adapter.
+     *
+     * @param newsList List<News> containing the data to populate views to be used
+     *                 by RecyclerView.
+     */
+    public NewsAdapter(RecyclerView recyclerView, List<News> newsList,
+                       Activity activity) {
+        this.newsList = newsList;
+        this.activity = activity;
+
+        final LinearLayoutManager linearLayoutManager =
+                (LinearLayoutManager) recyclerView.getLayoutManager();
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                totalItemCount = linearLayoutManager.getItemCount();
+                lastVisibleItem = linearLayoutManager.findLastVisibleItemPosition();
+                if (!isLoading && totalItemCount <= (lastVisibleItem + visibleThreshold)) {
+                    if (onLoadMoreListener != null) {
+                        isLoading = true;
+                        onLoadMoreListener.onLoadMore();
+                    }
+                }
+            }
+        });
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return newsList.get(position) == null ? VIEW_TYPE_LOADING : VIEW_TYPE_ITEM;
+    }
+
 
     /**
      * Provide a reference to the type of views that you are using
      * (custom ViewHolder).
      */
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public static class NewsViewHolder extends RecyclerView.ViewHolder {
         private final TextView titleTextView;
         private final TextView sectionTextView;
         private final TextView dateTextView;
 
-        public ViewHolder(View view) {
+        public NewsViewHolder(View view) {
             super(view);
             // Define click listener for the ViewHolder's View
             this.titleTextView = (TextView) view.findViewById(R.id.web_title);
@@ -48,87 +92,71 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.ViewHolder> {
         }
     }
 
-    /**
-     * Initialize the dataset of the Adapter.
-     *
-     * @param newsList List<News> containing the data to populate views to be used
-     *                 by RecyclerView.
-     */
-    public NewsAdapter(List<News> newsList) {
-        localNewsList = newsList;
+    // "Loading item" ViewHolder
+    private static class LoadingViewHolder extends RecyclerView.ViewHolder {
+        public ProgressBar progressBar;
+
+        public LoadingViewHolder(View view) {
+            super(view);
+            progressBar = view.findViewById(R.id.loading_spinner);
+        }
+    }
+
+    public void setOnLoadMoreListener(OnLoadMoreListener mOnLoadMoreListener) {
+        this.onLoadMoreListener = mOnLoadMoreListener;
     }
 
     // Create new views (invoked by the layout manager)
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        if (viewType == VIEW_TYPE_ITEM) {
+            View view = LayoutInflater.from(activity)
+                    .inflate(R.layout.news_item, parent, false);
+            return new NewsViewHolder(view);
+        } else if (viewType == VIEW_TYPE_LOADING) {
+            View view = LayoutInflater.from(activity)
+                    .inflate(R.layout.item_loading, parent, false);
+            return new LoadingViewHolder(view);
+        }
+        return null;
         // Create a new view, which defines the UI of the list item
-        View view = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.news_item, viewGroup, false);
 
-        return new ViewHolder(view);
     }
 
     // Replace the contents of a view (invoked by the layout manager)
     @Override
-    public void onBindViewHolder(ViewHolder viewHolder, final int position) {
+    public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, final int position) {
+        if (viewHolder instanceof NewsViewHolder) {
+            // Get element from your dataset at this position and replace the
+            // contents of the view with that element
+            News newsItem = this.newsList.get(position);
+            NewsViewHolder newsViewHolder = (NewsViewHolder) viewHolder;
+            newsViewHolder.getTitleTextView().setText(newsItem.getTitle());
+            newsViewHolder.getSectionTextView().setText(newsItem.getSectionName());
 
-        // Get element from your dataset at this position and replace the
-        // contents of the view with that element
-        News newsItem = localNewsList.get(position);
-
-        viewHolder.getTitleTextView().setText(newsItem.getTitle());
-
-        viewHolder.getSectionTextView().setText(newsItem.getSectionName());
-
-        Date publicationDate;
-        try {
-            publicationDate = newsItem.getDateTime();
-        } catch (ParseException exception) {
-            publicationDate = new Date();
+            Date publicationDate;
+            try {
+                publicationDate = newsItem.getDateTime();
+            } catch (ParseException exception) {
+                publicationDate = new Date();
+            }
+            newsViewHolder.getDateTextView().setText(getPublicationDateText(publicationDate));
+        } else if (viewHolder instanceof LoadingViewHolder) {
+            LoadingViewHolder loadingViewHolder = (LoadingViewHolder) viewHolder;
+            loadingViewHolder.progressBar.setIndeterminate(true);
         }
-        viewHolder.getDateTextView().setText(getPublicationDateText(publicationDate));
     }
 
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
-        return localNewsList.size();
+        return this.newsList == null ? 0 : this.newsList.size();
     }
 
-//    public NewsAdapter(@NonNull Context context, List<News> newsList) {
-//        super(context, 0, newsList);
-//    }
-//
-//    @NonNull
-//    @Override
-//    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-//        // Check if an existing view is being reused, otherwise inflate the view.
-//        View listItemView = convertView;
-//        if (listItemView == null) {
-//            listItemView = LayoutInflater.from(getContext()).inflate(
-//                    R.layout.news_item, parent, false);
-//        }
-//
-//        News newsItem = getItem(position);
-//
-//        TextView titleTextView =listItemView.findViewById(R.id.web_title);
-//        titleTextView.setText(newsItem.getTitle());
-//
-//        TextView sectionTextView = listItemView.findViewById(R.id.section_name);
-//        sectionTextView.setText(newsItem.getSectionName());
-//
-//        Date publicationDate;
-//        try {
-//            publicationDate = newsItem.getDateTime();
-//        } catch (ParseException exception) {
-//            publicationDate = new Date();
-//        }
-//        TextView dateTextView = listItemView.findViewById(R.id.publication_date);
-//        dateTextView.setText(getPublicationDateText(publicationDate));
-//
-//        return listItemView;
-//    }
+    public void setLoaded() {
+        isLoading = false;
+    }
 
     private String getPublicationDateText(Date date) {
         SimpleDateFormat dateFormat =
@@ -142,4 +170,14 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.ViewHolder> {
         }
         return formattedDate;
     }
+
+//    /**
+//     * Clear all items in the adapter
+//     */
+//    public void clear() {
+//        if (this.newsList == null) return;
+//        int size = this.newsList.size();
+//        this.newsList.clear();
+//        notifyItemRangeRemoved(0, size);
+//    }
 }

@@ -37,6 +37,6 @@
     </style>
 
     <style name="MainLayoutStyle">
-        <item name="android:background">@color/md_theme_dark_surfaceVariant</item>
+        <item name="android:background">@color/md_theme_dark_onPrimary</item>
     </style>
 </resources>

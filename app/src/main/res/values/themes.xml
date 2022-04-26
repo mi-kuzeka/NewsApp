@@ -37,6 +37,6 @@
     </style>
 
     <style name="MainLayoutStyle">
-        <item name="android:background">@color/md_theme_light_surfaceVariant</item>
+        <item name="android:background">@color/md_theme_light_onPrimary</item>
     </style>
 </resources>
