@@ -8,8 +8,9 @@ import androidx.loader.content.AsyncTaskLoader;
 
 import java.util.List;
 
-public class NewsLoader extends AsyncTaskLoader<List<News>> {
+public class NewsLoader extends AsyncTaskLoader<NewsResponse> {
     private String mUrl;
+
 
     public NewsLoader(Context context, String url) {
         super(context);
@@ -23,7 +24,7 @@ public class NewsLoader extends AsyncTaskLoader<List<News>> {
 
     @Nullable
     @Override
-    public List<News> loadInBackground() {
+    public NewsResponse loadInBackground() {
         if (TextUtils.isEmpty(mUrl)) return null;
 
         /** Create the list of news  from {@link QueryUtils} */

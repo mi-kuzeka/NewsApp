@@ -39,7 +39,7 @@ public class QueryUtils {
     /**
      * Query theguardian dataset and return list of {@link News} objects.
      */
-    public static List<News> fetchNewsData(String requestUrl) {
+    public static NewsResponse fetchNewsData(String requestUrl) {
         Log.v(LOG_TAG, "TEST: fetchNewsData");
 
         // Create URL object
@@ -140,7 +140,7 @@ public class QueryUtils {
      * Return list of {@link News} object by parsing out information
      * about news from the input newsJSON string.
      */
-    private static List<News> extractItemsFromJson(String newsJSON) {
+    private static NewsResponse extractItemsFromJson(String newsJSON) {
         // If the JSON string is empty or null, then return early.
         if (TextUtils.isEmpty(newsJSON)) {
             return null;
@@ -148,6 +148,10 @@ public class QueryUtils {
 
         // Create an empty ArrayList that we can start adding news to
         List<News> newsList = new ArrayList<>();
+        int itemsCount = 0;
+        int pageSize = 0;
+        int currentPage = 0;
+        int pagesCount = 0;
 
         // Try to parse the SAMPLE_JSON_RESPONSE. If there's a problem with the way the JSON
         // is formatted, a JSONException exception object will be thrown.
@@ -157,10 +161,25 @@ public class QueryUtils {
             // build up a list of News objects with the corresponding data.
             JSONObject reader = new JSONObject(newsJSON);
 
-            if (!reader.has("response")) return newsList;
+            if (!reader.has("response"))
+                return new NewsResponse(newsList, itemsCount, pageSize, currentPage, pagesCount);
             JSONObject response = reader.getJSONObject("response");
 
-            if (!response.has("results")) return newsList;
+            if (response.has("total")) {
+                itemsCount = response.getInt("total");
+            }
+            if (response.has("pageSize")) {
+                pageSize = response.getInt("pageSize");
+            }
+            if (response.has("currentPage")) {
+                currentPage = response.getInt("currentPage");
+            }
+            if (response.has("pages")) {
+                pagesCount = response.getInt("pages");
+            }
+            if (!response.has("results"))
+                return new NewsResponse(newsList, itemsCount, pageSize, currentPage, pagesCount);
+
             JSONArray items = response.getJSONArray("results");
 
             for (int i = 0; i < items.length(); i++) {
@@ -188,7 +207,7 @@ public class QueryUtils {
             // with the message from the exception.
             Log.e("QueryUtils", "Problem parsing the news JSON results", e);
         }
-        // Return the list of news
-        return newsList;
+        // Return the object {@link NewsResponse}
+        return new NewsResponse(newsList, itemsCount, pageSize, currentPage, pagesCount);
     }
 }

@@ -171,13 +171,13 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         return formattedDate;
     }
 
-//    /**
-//     * Clear all items in the adapter
-//     */
-//    public void clear() {
-//        if (this.newsList == null) return;
-//        int size = this.newsList.size();
-//        this.newsList.clear();
-//        notifyItemRangeRemoved(0, size);
-//    }
+    /**
+     * Clear all items in the adapter
+     */
+    public void clear() {
+        if (this.newsList == null) return;
+        int size = this.newsList.size();
+        this.newsList.clear();
+        notifyItemRangeRemoved(0, size);
+    }
 }

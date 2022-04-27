@@ -3,6 +3,7 @@ package ru.startandroid.newsapp;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -16,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
-        implements LoaderManager.LoaderCallbacks<List<News>> {
+        implements LoaderManager.LoaderCallbacks<NewsResponse> {
 
     /**
      * Constant value for the book loader ID. We can choose any integer.
@@ -25,14 +26,21 @@ public class MainActivity extends AppCompatActivity
     private static final int NEWS_LOADER_ID = 1;
     private final String API_KEY = "fa5384f8-4d43-4cab-9188-18a5a7465203";
     private final String THE_GUARDIAN_REQUEST_URL = "https://content.guardianapis.com/search";
+    private final String AND_QUERY_OPERATOR = "%20AND%20";
+    private final String OR_QUERY_OPERATOR = "%20OR%20";
+    private final String NOT_QUERY_OPERATOR = "%20NOT%20";
 
     // The text the user input into the SearchView
     private String mUserRequest;
     // The page in the user request
     private int currentPage;
+    // The count of pages for users query
+    private int totalPages;
 
     // The list with news items
     private RecyclerView mNewsRecyclerView;
+    // View for searching data
+    private SearchView mSearchView;
 
     // The array adapter for news items
     private NewsAdapter mNewsAdapter;
@@ -40,9 +48,9 @@ public class MainActivity extends AppCompatActivity
     // The AsyncTaskLoader for user request
     private NewsLoader mCurrentLoader;
 
-
     // The list of news for this request
     private List<News> mNewsList;
+    private NewsResponse mNewsResponse;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,9 +62,34 @@ public class MainActivity extends AppCompatActivity
         mNewsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mNewsRecyclerView.setHasFixedSize(true);
 
-        // TODO: change user request (set text from SearchView)
+        // Setting focus to the SearchView
+        mSearchView = findViewById(R.id.search_view);
+        mSearchView.requestFocus();
+
+        // Set the listener for the SearchView
+        mSearchView.setOnQueryTextListener(
+                new SearchView.OnQueryTextListener() {
+                    /**
+                     * This method starts loading when the user has submitted the request
+                     * @param query is user request
+                     */
+                    @Override
+                    public boolean onQueryTextSubmit(String query) {
+                        mUserRequest = query.trim().replace(" ", AND_QUERY_OPERATOR);
+                        clearAllLoadedData();
+                        initLoader();
+                        return true;
+                    }
+
+                    @Override
+                    public boolean onQueryTextChange(String newText) {
+                        return false;
+                    }
+                }
+        );
+        // Show last news by default
         mUserRequest = "";
-        // TODO: set this value every time the user changed search request
+        // Page number for first loading data
         currentPage = 1;
         mNewsList = new ArrayList<>();
 
@@ -79,16 +112,19 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onLoadMore() {
                 if (mNewsList == null || mNewsList.isEmpty()) {
+                    // This is to avoid data duplication
                     mNewsAdapter.setLoaded();
                     return;
                 }
-                // TODO: check if this is necessary
-                mNewsList.add(null);
-                mNewsAdapter.notifyItemInserted(mNewsList.size() - 1);
-                mNewsList.remove(mNewsList.size() - 1);
-                mNewsAdapter.notifyItemRemoved(mNewsList.size());
 
-                if (mNewsList != null && !mNewsList.isEmpty()) currentPage += 1;
+                if (mNewsResponse != null &&
+                        mNewsResponse.getCurrentPage() == mNewsResponse.getPagesCount()) {
+                    mNewsAdapter.setLoaded();
+                    return;
+                }
+
+                // Loading the next page
+                currentPage += 1;
                 initLoader();
             }
         });
@@ -96,7 +132,7 @@ public class MainActivity extends AppCompatActivity
 
     @NonNull
     @Override
-    public Loader<List<News>> onCreateLoader(int id, @Nullable Bundle args) {
+    public Loader<NewsResponse> onCreateLoader(int id, @Nullable Bundle args) {
         mCurrentLoader = new NewsLoader(this, combineRequestUrl());
         return mCurrentLoader;
     }
@@ -122,8 +158,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onLoadFinished(@NonNull Loader<List<News>> loader, List<News> newsList) {
-        mNewsList.addAll(newsList);
+    public void onLoadFinished(@NonNull Loader<NewsResponse> loader, NewsResponse newsResponse) {
+        mNewsResponse = newsResponse;
+        mNewsList.addAll(mNewsResponse.getNewsList());
 
         // TODO: Checking if there's internet on this device
 
@@ -134,6 +171,7 @@ public class MainActivity extends AppCompatActivity
 //        } else {
 //            mNewsAdapter.clear();
 //        }
+        if (!mUserRequest.equals("")) mSearchView.clearFocus();
 
         if (mNewsList == null || mNewsList.isEmpty()) {
             //TODO: If there's no news items for this query show message about no results
@@ -147,7 +185,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onLoaderReset(@NonNull Loader<List<News>> loader) {
+    public void onLoaderReset(@NonNull Loader<NewsResponse> loader) {
         // Clear previous news data
 //        if (mNewsAdapter != null) mNewsAdapter.clear();
     }
@@ -167,5 +205,13 @@ public class MainActivity extends AppCompatActivity
         //uriBuilder.appendQueryParameter("tag", "politics/politics");
         uriBuilder.appendQueryParameter("api-key", API_KEY);
         return uriBuilder.toString();
+    }
+
+    private void clearAllLoadedData() {
+        // Page number for first loading data by this query
+        currentPage = 1;
+        mNewsList.clear();
+        mNewsResponse.clear();
+        mNewsAdapter.clear();
     }
 }
