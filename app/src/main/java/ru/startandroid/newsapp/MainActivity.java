@@ -4,14 +4,19 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
+import androidx.fragment.app.Fragment;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +29,9 @@ public class MainActivity extends AppCompatActivity
      * This really only comes into play if you're using multiple loaders.
      */
     private static final int NEWS_LOADER_ID = 1;
+
+    private static final String LOG_TAG = MainActivity.class.getSimpleName();
+
     private final String API_KEY = "fa5384f8-4d43-4cab-9188-18a5a7465203";
     private final String THE_GUARDIAN_REQUEST_URL = "https://content.guardianapis.com/search";
     private final String AND_QUERY_OPERATOR = "%20AND%20";
@@ -32,9 +40,9 @@ public class MainActivity extends AppCompatActivity
 
     // The text the user input into the SearchView
     private String mUserRequest;
-    // The page in the user request
+    // Page in response to a user request
     private int currentPage;
-    // The count of pages for users query
+    // Number of pages in response to a user request
     private int totalPages;
 
     // The list with news items
@@ -42,8 +50,15 @@ public class MainActivity extends AppCompatActivity
     // View for searching data
     private SearchView mSearchView;
 
-    // The array adapter for news items
+    // Array adapter for news items
     private NewsAdapter mNewsAdapter;
+
+    // Stores the fragment object currently displayed to the user
+    private Fragment mCurrentActiveFragment;
+    // Fragment for an empty list of news. Displayed if there are no news for this query
+    private Fragment mEmptyFragment;
+    // The fragment is shown if there's no internet on this device
+    private Fragment mNoInternetFragment;
 
     // The AsyncTaskLoader for user request
     private NewsLoader mCurrentLoader;
@@ -51,6 +66,8 @@ public class MainActivity extends AppCompatActivity
     // The list of news for this request
     private List<News> mNewsList;
     private NewsResponse mNewsResponse;
+    // Shows whether or not there is internet on this device
+    private boolean noInternet;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +78,10 @@ public class MainActivity extends AppCompatActivity
         mNewsRecyclerView = findViewById(R.id.news_list);
         mNewsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mNewsRecyclerView.setHasFixedSize(true);
+
+        // Initialize fragments for no internet and no results states
+        mNoInternetFragment = new NoInternetFragment();
+        mEmptyFragment = new NoResultsFragment();
 
         // Setting focus to the SearchView
         mSearchView = findViewById(R.id.search_view);
@@ -95,6 +116,13 @@ public class MainActivity extends AppCompatActivity
 
         // Creating new ArrayAdapter for news info
         initNewsAdapter();
+
+        // Checking if there's internet on this device
+        noInternet = !isOnline(this);
+        if (noInternet) {
+            // Show message about no internet connection
+            setFragmentInsteadOfList(mNoInternetFragment);
+        }
 
         initLoader();
     }
@@ -138,11 +166,13 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void initLoader() {
-        // Clear previous news data
-//        if (mNewsAdapter != null) mNewsAdapter.clear();
-
-        // TODO: Checking if there's internet on this device
-
+        // Checking if there's internet on this device
+        noInternet = !isOnline(MainActivity.this);
+        if (noInternet) {
+            // Show message about no internet connection
+            setFragmentInsteadOfList(mNoInternetFragment);
+            return;
+        }
 
         // Get loading manager
         LoaderManager loaderManager = getSupportLoaderManager();
@@ -162,23 +192,22 @@ public class MainActivity extends AppCompatActivity
         mNewsResponse = newsResponse;
         mNewsList.addAll(mNewsResponse.getNewsList());
 
-        // TODO: Checking if there's internet on this device
+        // Checking if there's internet on this device
+        noInternet = !isOnline(MainActivity.this);
+        if (noInternet) {
+            // Show message about no internet connection
+            setFragmentInsteadOfList(mNoInternetFragment);
+            return;
+        }
 
-
-//        // Clear the adapter of previous news data
-//        if (mNewsAdapter == null) {
-//            initNewsAdapter();
-//        } else {
-//            mNewsAdapter.clear();
-//        }
         if (!mUserRequest.equals("")) mSearchView.clearFocus();
 
         if (mNewsList == null || mNewsList.isEmpty()) {
-            //TODO: If there's no news items for this query show message about no results
+            //If there's no news items for this query show message about no results
+            setFragmentInsteadOfList(mEmptyFragment);
         } else {
             // If there is a valid list of {@link News}, then add them to the adapter's
             // data set. This will trigger the ListView to update.
-//            mNewsAdapter.addAll(mNewsList, 0);
             mNewsAdapter.notifyDataSetChanged();
             mNewsAdapter.setLoaded();
         }
@@ -187,7 +216,20 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onLoaderReset(@NonNull Loader<NewsResponse> loader) {
         // Clear previous news data
-//        if (mNewsAdapter != null) mNewsAdapter.clear();
+        clearAllLoadedData();
+    }
+
+    // Check if device has internet connection
+    private static boolean isOnline(Context context) {
+        try {
+            ConnectivityManager connectivityManager =
+                    (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+            return networkInfo != null && networkInfo.isAvailable() && networkInfo.isConnected();
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "Problem checking internet connection", e);
+        }
+        return false;
     }
 
     /**
@@ -210,8 +252,30 @@ public class MainActivity extends AppCompatActivity
     private void clearAllLoadedData() {
         // Page number for first loading data by this query
         currentPage = 1;
-        mNewsList.clear();
-        mNewsResponse.clear();
-        mNewsAdapter.clear();
+        if (mNewsList != null) mNewsList.clear();
+        if (mNewsResponse != null) mNewsResponse.clear();
+        if (mNewsAdapter != null) mNewsAdapter.clear();
+    }
+
+    /**
+     * Show fragment instead of news list
+     */
+    private void setFragmentInsteadOfList(Fragment fragment) {
+        mCurrentActiveFragment = fragment;
+        // Replace container by fragment
+        getSupportFragmentManager().beginTransaction().replace(R.id.container, fragment)
+                .commit();
+    }
+
+    /**
+     * Remove unnecessary fragment
+     */
+    private void removeFragment() {
+        if (mCurrentActiveFragment != null) {
+            // Go back to the Main Activity
+            getSupportFragmentManager().beginTransaction().remove(mCurrentActiveFragment).commit();
+            // There's no active fragments
+            mCurrentActiveFragment = null;
+        }
     }
 }
