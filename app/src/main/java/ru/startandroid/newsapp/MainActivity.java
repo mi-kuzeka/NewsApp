@@ -200,6 +200,9 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
+        // Remove fragment if it's currently displayed
+        removeFragment();
+
         if (!mUserRequest.equals("")) mSearchView.clearFocus();
 
         if (mNewsList == null || mNewsList.isEmpty()) {
