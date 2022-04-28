@@ -39,4 +39,13 @@
     <style name="MainLayoutStyle">
         <item name="android:background">@color/md_theme_dark_onPrimary</item>
     </style>
+
+    <style name="FragmentStyle">
+        <item name="android:background">@color/md_theme_dark_onPrimary</item>
+    </style>
+
+    <style name="FragmentTextStyle" parent="Widget.AppCompat.TextView">
+        <item name="android:textColor">@color/md_theme_dark_primary</item>
+        <item name="android:textSize">@dimen/large_font_size</item>
+    </style>
 </resources>

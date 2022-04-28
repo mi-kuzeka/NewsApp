@@ -9,6 +9,7 @@ import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -35,7 +36,7 @@ public class MainActivity extends AppCompatActivity
     /**
      * Key for passing URL to the {@link NewsViewingActivity}
      */
-    public static String NEWS_ITEM_URL_KEY = "news_item_url";
+    public static final String NEWS_ITEM_URL_KEY = "news_item_url";
 
     private static final String API_KEY = "fa5384f8-4d43-4cab-9188-18a5a7465203";
     private static final String THE_GUARDIAN_REQUEST_URL =
@@ -55,6 +56,8 @@ public class MainActivity extends AppCompatActivity
     private RecyclerView mNewsRecyclerView;
     // View for searching data
     private SearchView mSearchView;
+    // Widget that detects vertical swiping and displays a distinctive progress bar
+    private SwipeRefreshLayout mSwipeRefreshLayout;
 
     // Array adapter for news items
     private NewsAdapter mNewsAdapter;
@@ -93,6 +96,20 @@ public class MainActivity extends AppCompatActivity
         mSearchView = findViewById(R.id.search_view);
         mSearchView.requestFocus();
 
+        // Find SwipeRefreshLayout view
+        mSwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
+        // The listener for refreshing list
+        SwipeRefreshLayout.OnRefreshListener onRefreshListener =
+                new SwipeRefreshLayout.OnRefreshListener() {
+                    @Override
+                    public void onRefresh() {
+                        clearAllLoadedData();
+                        initLoader();
+                    }
+                };
+        // Set the listener
+        mSwipeRefreshLayout.setOnRefreshListener(onRefreshListener);
+
         // Set the listener for the SearchView
         mSearchView.setOnQueryTextListener(
                 new SearchView.OnQueryTextListener() {
@@ -114,20 +131,24 @@ public class MainActivity extends AppCompatActivity
                     }
                 }
         );
-        // Show last news by default
-        mUserRequest = "";
-        // Page number for first loading data
-        currentPage = 1;
+
         mNewsList = new ArrayList<>();
 
         // Creating new ArrayAdapter for news info
         initNewsAdapter();
+
+        mUserRequest = "";
+
+        // Page number for first loading data
+        currentPage = 1;
 
         // Checking if there's internet on this device
         noInternet = !isOnline(this);
         if (noInternet) {
             // Show message about no internet connection
             setFragmentInsteadOfList(mNoInternetFragment);
+            stopSwipeToRefreshWidget();
+            return;
         }
 
         initLoader();
@@ -177,6 +198,7 @@ public class MainActivity extends AppCompatActivity
         if (noInternet) {
             // Show message about no internet connection
             setFragmentInsteadOfList(mNoInternetFragment);
+            stopSwipeToRefreshWidget();
             return;
         }
 
@@ -203,11 +225,9 @@ public class MainActivity extends AppCompatActivity
         if (noInternet) {
             // Show message about no internet connection
             setFragmentInsteadOfList(mNoInternetFragment);
+            stopSwipeToRefreshWidget();
             return;
         }
-
-        // Remove fragment if it's currently displayed
-        removeFragment();
 
         if (!mUserRequest.equals("")) mSearchView.clearFocus();
 
@@ -215,11 +235,15 @@ public class MainActivity extends AppCompatActivity
             //If there's no news items for this query show message about no results
             setFragmentInsteadOfList(mEmptyFragment);
         } else {
+            // Remove fragment if it's currently displayed
+            removeFragment();
             // If there is a valid list of {@link News}, then add them to the adapter's
             // data set. This will trigger the ListView to update.
             mNewsAdapter.notifyDataSetChanged();
             mNewsAdapter.setLoaded();
         }
+        // Stop refreshing when data has been loaded
+        stopSwipeToRefreshWidget();
     }
 
     @Override
@@ -270,6 +294,9 @@ public class MainActivity extends AppCompatActivity
      * Show fragment instead of news list
      */
     private void setFragmentInsteadOfList(Fragment fragment) {
+        if (mCurrentActiveFragment != null && mCurrentActiveFragment.equals(fragment))
+            return;
+
         mCurrentActiveFragment = fragment;
         // Replace container by fragment
         getSupportFragmentManager().beginTransaction().replace(R.id.container, fragment)
@@ -285,6 +312,36 @@ public class MainActivity extends AppCompatActivity
             getSupportFragmentManager().beginTransaction().remove(mCurrentActiveFragment).commit();
             // There's no active fragments
             mCurrentActiveFragment = null;
+        }
+    }
+
+    // Stop refreshing
+    private void stopSwipeToRefreshWidget() {
+        if (mSwipeRefreshLayout.isRefreshing()) {
+            mSwipeRefreshLayout.setRefreshing(false);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        LoaderManager loaderManager = getSupportLoaderManager();
+        loaderManager.destroyLoader(NEWS_LOADER_ID);
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onStop() {
+        removeFragment();
+        super.onStop();
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        mUserRequest = mSearchView.getQuery().toString();
+        if (!TextUtils.isEmpty(mUserRequest)) {
+            mSearchView.setQuery(mSearchView.getQuery(), true);
         }
     }
 }
