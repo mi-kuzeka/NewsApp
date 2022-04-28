@@ -11,6 +11,6 @@
     <string name="no_results">Your search did not match any results.\n\nSuggestions:\n\nMake sure all words are spelled correctly.\nTry different keywords.\nTry more general keywords.\nTry fewer keywords.</string>
     <!--    Message about no internet connection-->
     <string name="no_internet">No internet connection.</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <!--    Hint for the close button-->
+    <string name="close_hint">Close page</string>
 </resources>

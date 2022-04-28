@@ -1,6 +1,8 @@
 package ru.startandroid.newsapp;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -132,6 +134,19 @@ public class NewsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             // contents of the view with that element
             News newsItem = this.newsList.get(position);
             NewsViewHolder newsViewHolder = (NewsViewHolder) viewHolder;
+            Activity mainActivity = this.activity;
+
+            newsViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent(mainActivity, NewsViewingActivity.class);
+                    Bundle b = new Bundle();
+                    // Pass url to {@link NewsViewingActivity} for opening web page
+                    b.putString(MainActivity.NEWS_ITEM_URL_KEY, newsItem.getWebUrl().toString());
+                    intent.putExtras(b);
+                    mainActivity.startActivity(intent);
+                }
+            });
             newsViewHolder.getTitleTextView().setText(newsItem.getTitle());
             newsViewHolder.getSectionTextView().setText(newsItem.getSectionName());
 

@@ -8,4 +8,5 @@
     <dimen name="empty_search_margin">16dp</dimen>
     <dimen name="large_font_size">18sp</dimen>
     <dimen name="fragment_margin">18sp</dimen>
+    <dimen name="close_view_margin">8dp</dimen>
 </resources>

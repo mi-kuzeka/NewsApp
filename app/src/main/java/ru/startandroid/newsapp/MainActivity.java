@@ -32,8 +32,14 @@ public class MainActivity extends AppCompatActivity
 
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
-    private final String API_KEY = "fa5384f8-4d43-4cab-9188-18a5a7465203";
-    private final String THE_GUARDIAN_REQUEST_URL = "https://content.guardianapis.com/search";
+    /**
+     * Key for passing URL to the {@link NewsViewingActivity}
+     */
+    public static String NEWS_ITEM_URL_KEY = "news_item_url";
+
+    private static final String API_KEY = "fa5384f8-4d43-4cab-9188-18a5a7465203";
+    private static final String THE_GUARDIAN_REQUEST_URL =
+            "https://content.guardianapis.com/search";
     private final String AND_QUERY_OPERATOR = "%20AND%20";
     private final String OR_QUERY_OPERATOR = "%20OR%20";
     private final String NOT_QUERY_OPERATOR = "%20NOT%20";
