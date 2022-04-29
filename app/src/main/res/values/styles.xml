@@ -12,4 +12,9 @@
         <item name="android:maxLines">@integer/section_name_max_lines</item>
         <item name="android:ellipsize">end</item>
     </style>
+
+    <style name="AppDayNightTheme" parent="Theme.AppCompat.DayNight">
+        <item name="android:forceDarkAllowed">true</item>
+        <item name="android:isLightTheme">true</item>
+    </style>
 </resources>
