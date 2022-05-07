@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">News App</string>
+    <string name="app_name">News</string>
     <!--    Temp data for news item-->
     <string name="temp_section_name">US news</string>
     <string name="temp_web_title">Biden to detail new military aid plan for Ukraine – US politics live</string>
